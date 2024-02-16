@@ -21,14 +21,14 @@ export class ProductEntity {
   @Column({ name: 'value', nullable: false })
   value: number;
 
-  @Column({ name: 'quantidade_disponivel', nullable: false })
-  quantidadeDisponivel: number;
+  @Column({ name: 'available_quantity', nullable: false })
+  availableQuantity: number;
 
-  @Column({ name: 'descricao', length: 255, nullable: false })
-  descricao: string;
+  @Column({ name: 'description', length: 255, nullable: false })
+  description: string;
 
-  @Column({ name: 'categoria', length: 100, nullable: false })
-  categoria: string;
+  @Column({ name: 'category', length: 100, nullable: false })
+  category: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: string;
