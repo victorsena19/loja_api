@@ -13,7 +13,7 @@ export class UniqueEmailValidator implements ValidatorConstraintInterface {
   constructor(private userService: UserService) {}
 
   async validate(value: any): Promise<boolean> {
-    const userEmailExist = await this.userService.searchEmail(value);
+    const userEmailExist = await this.userService.listUserByEmail(value);
     return !userEmailExist;
   }
 }
