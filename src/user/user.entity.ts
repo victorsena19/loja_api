@@ -1,8 +1,10 @@
+import { OrderEntity } from '../order/order.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -20,6 +22,9 @@ export class UserEntity {
 
   @Column({ name: 'password', length: 50, nullable: false })
   password: string;
+
+  @OneToMany(() => OrderEntity, (order) => order.user)
+  order: OrderEntity[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: string;

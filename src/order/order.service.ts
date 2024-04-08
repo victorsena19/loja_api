@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UserEntity } from 'src/user/user.entity';
@@ -20,6 +24,25 @@ export class OrderService {
     private readonly orderRepository: Repository<OrderEntity>,
   ) {}
 
+  private handlesRequest(dataOrder: CreateOrderDto, products: ProductEntity[]) {
+    dataOrder.itensOrder.forEach((itemOrder) => {
+      const relatedProduct = products.find(
+        (product) => product.id === itemOrder.productId,
+      );
+      if (relatedProduct === undefined) {
+        throw new NotFoundException(
+          `O Produto com o id ${itemOrder.productId} não foi encontrado!`,
+        );
+      }
+
+      if (itemOrder.quantity > relatedProduct.availableQuantity) {
+        throw new BadRequestException(
+          `A quantidade solicitada (${itemOrder.quantity}) é maior do que a disponível (${relatedProduct.availableQuantity}) para o produto ${relatedProduct.name}.`,
+        );
+      }
+    });
+  }
+
   async registerOrder(userId: string, dataOrder: CreateOrderDto) {
     const user = await this.userRepository.findOneBy({ id: userId });
 
@@ -37,6 +60,7 @@ export class OrderService {
 
     orderEntity.status = StatusPedido.PROCESSING;
     orderEntity.user = user;
+    this.handlesRequest(dataOrder, relatedsProducts);
 
     const itensOrder = dataOrder.itensOrder.map((itemOrder) => {
       const relatedProduct = relatedsProducts.find(
