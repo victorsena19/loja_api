@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UserEntity } from 'src/user/user.entity';
@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ProductEntity } from 'src/product/product.entity';
 import { OrderEntity } from './order.entity';
 import { StatusPedido } from './enum/StatusPedido.enum';
-import { ItemOrderEntity } from './ItemOrder.entity';
+import { ItemOrderEntity } from './itemOrder.entity';
 
 @Injectable()
 export class OrderService {
@@ -22,6 +22,11 @@ export class OrderService {
 
   async registerOrder(userId: string, dataOrder: CreateOrderDto) {
     const user = await this.userRepository.findOneBy({ id: userId });
+
+    if (user === null) {
+      throw new NotFoundException('Usuario não cadastrado!');
+    }
+
     const productId = dataOrder.itensOrder.map(
       (itemOrder) => itemOrder.productId,
     );
@@ -37,6 +42,12 @@ export class OrderService {
       const relatedProduct = relatedsProducts.find(
         (product) => product.id === itemOrder.productId,
       );
+
+      if (relatedProduct === undefined) {
+        throw new NotFoundException(
+          `O Produto com o id ${itemOrder.productId} não foi encontrado!`,
+        );
+      }
       const itemOrderEntity = new ItemOrderEntity();
       itemOrderEntity.product = relatedProduct;
       itemOrderEntity.salePrice = relatedProduct.value;
@@ -74,6 +85,9 @@ export class OrderService {
 
   async update(id: string, dataOrderDto: UpdateOrderDto) {
     const order = await this.orderRepository.findOneBy({ id });
+    if (order === null) {
+      throw new NotFoundException('O pedido não foi encontrado');
+    }
     Object.assign(order, dataOrderDto);
     return this.orderRepository.save(order);
   }
